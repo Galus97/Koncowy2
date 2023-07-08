@@ -29,12 +29,15 @@ public class TaskController {
 
 
     @GetMapping("/addtask")
-    public String taskGet(Model model) {
-        Task task = new Task();
-
+    public String taskGet(Model model, @RequestParam(value = "edit", required = false) boolean edit,
+                          @RequestParam(value = "id", required = false) Long taskId) {
         Optional<User> optionalUser = authenticationUtils.getCurrentUser();
         if (optionalUser.isPresent()) {
             User user = optionalUser.get();
+            if (edit && taskId != null) {
+                taskService.deleteTask(taskId); // Usunięcie istniejącego zadania
+            }
+            Task task = new Task();
             task.setUser(user);
             model.addAttribute("task", task);
             return "task";
@@ -42,6 +45,7 @@ public class TaskController {
             return "login";
         }
     }
+
 
 
 
@@ -84,4 +88,6 @@ public class TaskController {
 
         return "redirect:/home";
     }
+
+
 }

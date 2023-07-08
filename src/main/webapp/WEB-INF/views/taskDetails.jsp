@@ -18,7 +18,7 @@
     <li>
         <c:out value="${task.secondStep}"/>
     </li>
-
+    <a href="/addtask?edit=true&id=${task.id}">Edytuj zadanie</a>
     <a href="/deleteTask?id=${task.id}">Usuń zadanie</a>
     <a href="/finishTask/${task.id}">Wykonane</a>
 
