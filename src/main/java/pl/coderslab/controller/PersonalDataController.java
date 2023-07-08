@@ -1,8 +1,6 @@
 package pl.coderslab.controller;
 
 import jakarta.validation.Valid;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -11,7 +9,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import pl.coderslab.component.AuthenticationUtils;
 import pl.coderslab.entity.PersonalData;
 import pl.coderslab.entity.User;
-import pl.coderslab.repository.UserRepository;
 import pl.coderslab.service.PersonalDataService;
 
 import java.util.Optional;
@@ -29,15 +26,17 @@ public class PersonalDataController {
 
     @GetMapping("/personaldata")
     public String personalDataForm(Model model) {
-        PersonalData personalData = new PersonalData();
-
         Optional<User> optionalUser = authenticationUtils.getCurrentUser();
         if (optionalUser.isPresent()) {
             User user = optionalUser.get();
-            personalData.setUser(user);
+            PersonalData personalData = personalDataService.findByUser(user);
+            if (personalData == null) {
+                personalData = new PersonalData();
+                personalData.setUser(user);
+            }
             model.addAttribute("personalData", personalData);
             return "personalData";
-        } else{
+        } else {
             return "login";
         }
     }
@@ -49,7 +48,20 @@ public class PersonalDataController {
             return "personalData";
         }
 
-        personalDataService.savePersonalData(personalData);
-        return "home";
+        PersonalData existingData = personalDataService.findByUser(personalData.getUser());
+        if (existingData != null) {
+            existingData.setFirstName(personalData.getFirstName());
+            existingData.setLastName(personalData.getLastName());
+            existingData.setGoal(personalData.getGoal());
+            existingData.setAge(personalData.getAge());
+            existingData.setHeight(personalData.getHeight());
+            existingData.setWeight(personalData.getWeight());
+            personalDataService.savePersonalData(existingData);
+        } else {
+            personalDataService.savePersonalData(personalData);
+        }
+
+        return "redirect:home";
     }
+
 }
